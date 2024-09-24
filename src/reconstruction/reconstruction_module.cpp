@@ -45,6 +45,8 @@
 #include "hydra/reconstruction/mesh_integrator.h"
 #include "hydra/reconstruction/projective_integrator.h"
 #include "hydra/utils/timing_utilities.h"
+#include <config_utilities/parsing/yaml.h>
+#include <filesystem>
 
 namespace hydra {
 
@@ -107,7 +109,27 @@ void ReconstructionModule::stop() {
   }
 }
 
-void ReconstructionModule::save(const LogSetup&) {}
+void ReconstructionModule::save(const LogSetup& log_setup) {
+  // std::lock_guard<std::mutex> lock(mutex_);
+  const auto output_dir = log_setup.getLogDir() + "/VolumetricMap";
+  std::filesystem::path output_path(output_dir);
+  if (!std::filesystem::exists(output_path)) {
+    std::filesystem::create_directories(output_path);
+  }
+
+  //save volumetric map
+  // map_->save(output_path);
+  // LOG(INFO) << "[Hydra Reconstruction] Saved volumetric map to file: tsdf layer (" 
+  //   << output_path << "_tsdf.layer), semantic layer (" << output_path <<
+  //   "_semantics.layer)";
+  LOG(INFO) << "Saving mesh and tsdf to " << output_path;
+  map_->save(output_path / "map");
+
+  //save ReconstructionVisualizer type of Reconstruction config
+  // std::ofstream config_file(output_dir + "_reconstructionConfig.yaml");
+  // config_file << config::toYaml(config);
+  // LOG(INFO) << "[Hydra Reconstruction config:]" << printInfo();
+}
 
 std::string ReconstructionModule::printInfo() const {
   std::stringstream ss;
