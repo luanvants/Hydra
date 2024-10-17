@@ -82,6 +82,8 @@ ReconstructionModule::ReconstructionModule(const Config& config,
   tsdf_integrator_ = std::make_unique<ProjectiveIntegrator>(config.tsdf);
   mesh_integrator_ = std::make_unique<MeshIntegrator>(config.mesh);
   footprint_integrator_ = config.robot_footprint.create();
+
+  save_map_ = map_->clone();
 }
 
 ReconstructionModule::~ReconstructionModule() { stop(); }
@@ -123,7 +125,7 @@ void ReconstructionModule::save(const LogSetup& log_setup) {
   //   << output_path << "_tsdf.layer), semantic layer (" << output_path <<
   //   "_semantics.layer)";
   LOG(INFO) << "Saving mesh and tsdf to " << output_path;
-  map_->save(output_path / "map");
+  save_map_->save(output_path / "map");
 
   //save ReconstructionVisualizer type of Reconstruction config
   // std::ofstream config_file(output_dir + "_reconstructionConfig.yaml");
@@ -239,6 +241,9 @@ bool ReconstructionModule::update(const InputPacket& msg, bool full_update) {
   if (config.show_stats) {
     VLOG(config.stats_verbosity) << "Memory used: {" << map_->printStats() << "}";
   }
+
+  if(map_)
+    save_map_->updateFrom(*map_);
 
   auto output = ReconstructionOutput::fromInput(msg);
   output->sensor_data = data;

@@ -55,6 +55,7 @@ namespace hydra {
 
 class ProjectiveIntegrator;
 class MeshIntegrator;
+std::unique_ptr<VolumetricMap> save_map_;
 
 class ReconstructionModule : public Module {
  public:
