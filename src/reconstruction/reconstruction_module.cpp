@@ -81,7 +81,13 @@ ReconstructionModule::ReconstructionModule(const Config& config,
   map_.reset(new VolumetricMap(GlobalInfo::instance().getMapConfig(), true));
   tsdf_integrator_ = std::make_unique<ProjectiveIntegrator>(config.tsdf);
   mesh_integrator_ = std::make_unique<MeshIntegrator>(config.mesh);
-  footprint_integrator_ = config.robot_footprint.create();
+  // footprint_integrator_ = config.robot_footprint.create();
+
+  RobotFootprintIntegrator::Config config1;
+  config1.bbox_min = Eigen::Vector3f(1.0f, 2.0f, 3.0f); // Set bbox_min to [1.0, 2.0, 3.0]
+  config1.bbox_max = Eigen::Vector3f(40.0f, 50.0f, 60.0f); // Set bbox_max to [4.0, 5.0, 6.0]
+  config1.tsdf_weight = 1.0;
+  footprint_integrator_ = std::make_shared<RobotFootprintIntegrator>(config1);
 }
 
 ReconstructionModule::~ReconstructionModule() { stop(); }
@@ -221,6 +227,7 @@ bool ReconstructionModule::update(const InputPacket& msg, bool full_update) {
     footprint_integrator_->addFreespaceFootprint(msg.world_T_body().cast<float>(),
                                                  *map_);
   }
+  else LOG(INFO) << "--- NO ROBOT FOOTPRINT ---" << std::endl;
 
   auto& tsdf = map_->getTsdfLayer();
   if (tsdf.numBlocks() == 0) {
